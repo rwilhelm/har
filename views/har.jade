@@ -1,0 +1,21 @@
+doctype html
+
+html(lang='en')
+	head
+		meta(charset='utf-8')
+		title _har
+
+		meta(name='google' content='notranslate')
+		meta(name='viewport', content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no')
+
+		script(src='http://d3js.org/d3.v3.min.js')
+
+		link(rel='stylesheet', href='http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css')
+		script(src='http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js')
+
+	body
+		#map
+
+		script var trip_id=!{JSON.stringify(trip_id)};
+		link(rel='stylesheet', href='/css/har.css')
+		script(src='/js/har.js')
