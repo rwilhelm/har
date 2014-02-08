@@ -35,8 +35,32 @@ function gps(params, body, callback) {
 	});
 }
 
+function har(params, body, callback) {
+	db.connect("pg://postgres:liveandgov@localhost/liveandgov", function(err, client, done) {
+		var statement = {
+			text: "SELECT ts, tag FROM har_annotation WHERE trip_id = $1",
+			values: [params.trip_id]
+		};
+
+		if (err) { console.error(err); return; }
+
+		client.query(statement, function(err, result) {
+			done();
+			if (err) { console.error(err); return; }
+			callback(err, result.rows);
+		});
+	});
+}
+
 app.get('/:trip_id/gps', function(req, res, next) {
 	gps(req.params, req.query, function(err, data) {
+		if (err) { res.send(err); console.error(err); return; }
+		res.json(data);
+	});
+});
+
+app.get('/:trip_id/har', function(req, res, next) {
+	har(req.params, req.query, function(err, data) {
 		if (err) { res.send(err); console.error(err); return; }
 		res.json(data);
 	});
