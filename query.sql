@@ -1,4 +1,6 @@
--- Same query as in server.js.
+-- Same query as in server.js
+-- psql -U postgres liveandgov -f query.sql
+-- Replace the 177 with $1 before you put it into server.js
 
 SELECT 'FeatureCollection' AS type,
 array_to_json(array_agg(f)) AS features FROM (
