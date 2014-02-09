@@ -1,7 +1,7 @@
 {
   "name": "har",
-  "version": "0.0.0",
-  "description": "",
+  "version": "0.9.0",
+  "description": "har ===",
   "main": "server.js",
   "dependencies": {
     "express": "~3.4.8",
@@ -13,6 +13,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "author": "",
-  "license": "ISC"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/rwilhelm/har.git"
+  },
+  "author": "René Wilhelm",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rwilhelm/har/issues"
+  },
+  "homepage": "https://github.com/rwilhelm/har"
 }
