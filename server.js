@@ -52,6 +52,23 @@ function har(params, body, callback) {
 	});
 }
 
+function trips(params, body, callback) {
+	db.connect("pg://postgres:liveandgov@localhost/liveandgov", function(err, client, done) {
+		var statement = {
+			text: "SELECT * FROM ft_trips",
+			values: []
+		};
+
+		if (err) { console.error(err); return; }
+
+		client.query(statement, function(err, result) {
+			done();
+			if (err) { console.error(err); return; }
+			callback(err, result.rows);
+		});
+	});
+}
+
 app.get('/:trip_id/gps', function(req, res, next) {
 	gps(req.params, req.query, function(err, data) {
 		if (err) { res.send(err); console.error(err); return; }
@@ -67,7 +84,10 @@ app.get('/:trip_id/har', function(req, res, next) {
 });
 
 app.get('/:trip_id', function(req, res, next) {
-	res.render('har', {trip_id: req.params.trip_id});
+	trips(req.params, req.query, function(err, trips) {
+		if (err) { res.send(err); console.error(err); return; }
+		res.render('har', {trip_id: req.params.trip_id, trips: trips});
+	});
 });
 
 app.listen(app.get('port'));
