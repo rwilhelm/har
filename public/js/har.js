@@ -4,7 +4,7 @@
 
 var API_KEY = 'BC9A493B41014CAABB98F0471D759707'
 
-var map = new L.Map("map", {zoom: 15, minZoom: 12, maxZoom: 18})
+var map = new L.Map("map", {zoom: 15, minZoom: 10, maxZoom: 18})
 	.addLayer(new L.TileLayer("http://{s}.tile.cloudmade.com/" + API_KEY + "/998/256/{z}/{x}/{y}.png"));
 
 var fc, activities;
@@ -72,9 +72,8 @@ d3.json('/' + trip_id + '/gps', function(collection) {
 		}
 
 		activities = fc.features.map(function(d) { return d.properties.activity })
-			.sort().filter(function(el,i,a) { if (i == a.indexOf(el)) return 1; return 0 });
-
 		activities[activities.indexOf(null)] = "unknown";
+		activities = activities.sort().filter(function(el,i,a) { if (i == a.indexOf(el)) return 1; return 0 });
 		activities.filter(function(n) { return n });
 
 		function knownActivities(array) {
