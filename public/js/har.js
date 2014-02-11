@@ -54,15 +54,21 @@ d3.json('/' + trip_id + '/gps', function(collection) {
 						"n": n,
 						"t0": t0,
 						"t1": t1,
-						"duration": moment.duration(t1-t0),
 						"activity": a,
-						"distance": calculateDistance(g0, g1)
+						"duration": moment.duration(t1-t0),
+						"distance": calculateDistance(g0, g1),
+						"speed": null
 					}
 				});
 				n++;
 			}
 
-			if (fc.features.length > 0) { var prev = fc.features[fc.features.length-1] }
+			var cur = fc.features[fc.features.length-1];
+
+			cur.properties.speed = Math.round(((cur.properties.distance) / (cur.properties.duration*1000)) *60*60*1000*100) / 100;
+
+			// if (fc.features.length > 0) { var prev = fc.features[fc.features.length-1] }
+			var prev = cur;
 		}
 
 		activities = fc.features.map(function(d) { return d.properties.activity })
@@ -137,6 +143,7 @@ d3.json('/' + trip_id + '/gps', function(collection) {
 					(k == 't0' || k == 't1') ? v = moment.unix(parseInt(v)).utc().format("HH:mm:ss") : null;
 					(k == 'distance') ? v = Math.round(v*100, 12) / 100 + " m" : null;
 					(k == 'duration') ? v = moment.duration(v).humanize() : null;
+					(k == 'speed') ? v = v + ' km/h' : null;
 					popupString += k + ': ' + v + '<br />';
 				}
 				popupString += '</div>';
