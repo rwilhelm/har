@@ -38,7 +38,7 @@ function gps(params, body, callback) {
 function har(params, body, callback) {
 	db.connect("pg://postgres:liveandgov@localhost/liveandgov", function(err, client, done) {
 		var statement = {
-			text: "SELECT ts, tag FROM har_annotation WHERE trip_id = $1",
+			text: "SELECT ts, tag FROM har_annotation WHERE trip_id = $1 ORDER BY ts",
 			values: [params.trip_id]
 		};
 
@@ -55,7 +55,7 @@ function har(params, body, callback) {
 function trips(params, body, callback) {
 	db.connect("pg://postgres:liveandgov@localhost/liveandgov", function(err, client, done) {
 		var statement = {
-			text: "SELECT * FROM ft_trips",
+			text: "SELECT * FROM ft_trips ORDER BY trip_id",
 			values: []
 		};
 
@@ -88,6 +88,10 @@ app.get('/:trip_id', function(req, res, next) {
 		if (err) { res.send(err); console.error(err); return; }
 		res.render('har', {trip_id: req.params.trip_id, trips: trips});
 	});
+});
+
+app.get('/', function(req, res, next) {
+	res.redirect('/465');
 });
 
 app.listen(app.get('port'));
