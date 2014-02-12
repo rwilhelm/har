@@ -1,60 +1,68 @@
 'use strict';
 
-// var gju = require('geojson-utils');
-
 var API_KEY = 'BC9A493B41014CAABB98F0471D759707'
 
 var map = new L.Map("map", {zoom: 15, minZoom: 10, maxZoom: 18})
 	.addLayer(new L.TileLayer("http://{s}.tile.cloudmade.com/" + API_KEY + "/998/256/{z}/{x}/{y}.png"));
 
-var fc, activities;
+var h, g, f, a; // DEBUG global for debugging
+
 d3.json('/' + trip_id + '/gps', function(collection) {
 	if (!collection) { console.log("NO GPS DATA!"); return };
 	var gps = collection;
+	g = gps; // DEBUG global
 
 	d3.json('/' + trip_id + '/har', function(collection) {
 		if (!collection) { console.log("NO HAR DATA!"); return };
 		var har = collection;
+		h = har; // DEBUG global
 
-		fc = {
+		// prepare feature collection (see geoJSON spec)
+		var fc = {
 			"type": "FeatureCollection",
 			"features": []
 		};
+		f = fc; // DEBUG global
 
-		var geoJson;
-
+		// compute har tags and populate FeatureCollection
 		var n = 0;
 		for (var i=0; i<gps.length; i++) {
 			var t0 = gps[i].ts;
 			var g0 = gps[i].lonlat.coordinates; // array
 
+			 // only if there is one more gps entry
 			if (gps[i+1]) {
 				var t1 = gps[i+1].ts;
 				var g1 = gps[i+1].lonlat.coordinates; // array
 
-				var a = [];
-				har.map(function(d) { if (d.ts > t0 && d.ts < t1) { a.push(d.tag) } })
-				a = getMaxOccurrence(a);
+				// calculate the most popular tag between t0 and t1
+				var topActivity = getMaxOccurrence(har.map(function(d) {
+					if (d.ts >= t0 && d.ts <= t1) { // get tags between t0 and t1
+						return d.tag.replace(/\"/g, "") // remove quotes
+					}}).filter(function(d) { return d })); // remove undefined
 			}
 
-			if (prev && a == prev.properties.activity) {
+			// prev is defined after first loop iteration
+			if (prev && topActivity == prev.properties.activity) {
+				// if there is a previous feature with the same activity, push some values there
 				prev.geometry.coordinates.push(g1);
-				prev.properties.t1 = t1;
+				prev.properties.t1 = t1; // FIXME wrong timestamp
 				prev.properties.distance += calculateDistance(g0, g1);
 				prev.properties.duration += moment.duration(t1-t0);
 			} else {
+				// create a new feature
 				fc.features.push({
 					"type": "Feature",
 					"geometry": {
 						"type": "LineString",
-						"coordinates": [ g0, g1 ]
+						"coordinates": [ g0, g1 ] // coordinates is an array of arrays
 					},
 					"properties": {
 						"id": trip_id,
 						"n": n,
 						"t0": t0,
-						"t1": t1,
-						"activity": a,
+						"t1": t1, // FIXME wrong timestamp
+						"activity": topActivity,
 						"duration": moment.duration(t1-t0),
 						"distance": calculateDistance(g0, g1),
 						"speed": null
@@ -63,22 +71,26 @@ d3.json('/' + trip_id + '/gps', function(collection) {
 				n++;
 			}
 
+			// feature of current loop iteration
 			var cur = fc.features[fc.features.length-1];
 
+			// calculate speed afterwards, because we nee distance and duration and don't want to compute them twice
 			cur.properties.speed = Math.round(((cur.properties.distance) / (cur.properties.duration*1000)) *60*60*1000*100) / 100;
 
-			// if (fc.features.length > 0) { var prev = fc.features[fc.features.length-1] }
+			// save current feature for next loop iteration
 			var prev = cur;
 		}
 
-		activities = fc.features.map(function(d) { return d.properties.activity })
-		activities[activities.indexOf(null)] = "unknown";
-		activities = activities.sort().filter(function(el,i,a) { if (i == a.indexOf(el)) return 1; return 0 });
-		activities.filter(function(n) { return n });
+		// FIXME wrap in function
+		var activities = fc.features.map(function(d) { return d.properties.activity })
+		activities[activities.indexOf(null)] = "unknown"; // change null to "unknown"
+		activities = activities.sort().filter(function(el,i,a) { if (i == a.indexOf(el)) return 1; return 0 }); // sort unique
+		activities.filter(function(n) { return n }); // remove undefined
 
-		function knownActivities(array) {
-			a = ["running", "walking", "standing", "sitting", "on table", "unknown"];
-			return a.map(function(d) { return array[array.indexOf(d)] });
+		// returns activities in a manually sorted order
+		function sortActivities(activities) {
+			var a = ["running", "walking", "standing", "sitting", "on table", "unknown"];
+			return a.map(function(d) { return activities[activities.indexOf(d)] });
 		}
 
 		function getColor(d) {
@@ -105,7 +117,7 @@ d3.json('/' + trip_id + '/gps', function(collection) {
 			var layer = e.target;
 
 			layer.setStyle({
-				weight: 16,
+				weight: 10,
 				opacity: 0.8
 			});
 
@@ -114,20 +126,18 @@ d3.json('/' + trip_id + '/gps', function(collection) {
 			}
 		}
 
-		var legend = L.control({position: 'topright'});
+		// Create and add a legend
+		$('#legend').append(function(map) {
+			var div = L.DomUtil.create('div', 'info legend leaflet-bar', this.legend);
 
-		legend.onAdd = function (map) {
-			var div = L.DomUtil.create('div', 'info legend leaflet-bar');
-
-			a = knownActivities(activities).filter(function(n) { return n });
+			// sort activities before generating legend
+			var a = sortActivities(activities).filter(function(n) { return n });
 
 			for (var i = 0; i < a.length; i++) {
-				div.innerHTML +=
-					'<i style="background:' + getColor(a[i]) + '"></i>' +
-					a[i] + '<br>';
+				div.innerHTML += '<i style="background:' + getColor(a[i]) + '"></i>' + a[i] + '<br>';
 			}
 			return div;
-		};
+		});
 
 		function resetHighlight(e) {
 			geoJson.resetStyle(e.target);
@@ -158,13 +168,10 @@ d3.json('/' + trip_id + '/gps', function(collection) {
 		}
 
 		// Draw geoJSON object to map
-		geoJson = L.geoJson(fc, {
+		var geoJson = L.geoJson(fc, {
 			style: style,
 			onEachFeature: onEachFeature
 		}).addTo(map);
-
-		// Add legend to map
-		legend.addTo(map);
 
 		// Zoom map to fit our route
 		map.fitBounds(geoJson.getBounds());
