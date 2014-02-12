@@ -13,16 +13,38 @@ html(lang='en')
 		link(rel='stylesheet', href='http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css')
 		script(src='http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js')
 
+		script(src='http://code.jquery.com/jquery-2.0.2.min.js')
+
 		script(src='http://momentjs.com/downloads/moment.min.js')
 
 		script(src='js/geojson-utils.js')
 
-		#triplist
-			ul
+	body
+		#left
+			#legend
+			#favtrips
+				a(href="270") 270
+				span &nbsp;
+				a(href="336") 336
+				span &nbsp;
+				a(href="369") 369
+				span &nbsp;
+				a(href="385") 385
+				br
+				a(href="386") 386
+				span &nbsp;
+				a(href="468") 465
+				span &nbsp;
+				a(href="468") 466
+				span &nbsp;
+				a(href="468") 468
+
+			#trips
 				each trip in trips
-					li
+					span
 						a(href="/#{trip.trip_id}")= trip.trip_id
-		#map
+		#right
+			#map
 
 		script var trip_id=!{JSON.stringify(trip_id)};
 		link(rel='stylesheet', href='/css/har.css')
