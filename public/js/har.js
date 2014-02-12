@@ -79,6 +79,11 @@ d3.json('/' + trip_id + '/gps', function(collection) {
 
 			// save current feature for next loop iteration
 			var prev = cur;
+
+			// TEMP recalculate activity
+			// cur.properties.activity = getSpeedMode(cur.properties.speed);
+
+		//END_loop
 		}
 
 		// FIXME wrap in function
@@ -89,26 +94,27 @@ d3.json('/' + trip_id + '/gps', function(collection) {
 
 		// returns activities in a manually sorted order
 		function sortActivities(activities) {
-			var a = ["running", "walking", "standing", "sitting", "on table", "unknown"];
+			var a = ["driving", "running", "walking", "standing", "sitting", "on table", "unknown"];
 			return a.map(function(d) { return activities[activities.indexOf(d)] });
 		}
 
 		function getColor(d) {
 			switch (d) {
-				case 'walking':  return "#E0BC0B"; // yellow
-				case 'running':  return "#F60100"; // red
-				case 'standing': return "#222222"; // green
-				case 'sitting':  return "#666666"; // blue
-				case 'on table': return "#999999"; // grey
-				case 'unknown': return "#ff00ff"; // grey
-				case null: return "#ff00ff"; // grey
+				case 'driving':  return "#377eb8";
+				case 'running':  return "#e41a1c";
+				case 'walking':  return "#ff7f00";
+				case 'standing': return "#4daf4a";
+				case 'sitting':  return "#984ea3";
+				case 'on table': return "#a65628";
+				case 'unknown': return "#777777";
+				case null: return "#777777";
 			}
 		}
 
 		function style(feature) {
 			return {
 				weight: 8,
-				opacity: 0.5,
+				opacity: 0.7,
 				color: getColor(feature.properties.activity),
 			};
 		}
@@ -118,7 +124,7 @@ d3.json('/' + trip_id + '/gps', function(collection) {
 
 			layer.setStyle({
 				weight: 10,
-				opacity: 0.8
+				opacity: 1
 			});
 
 			if (!L.Browser.ie && !L.Browser.opera) {
@@ -201,6 +207,14 @@ d3.json('/' + trip_id + '/gps', function(collection) {
 
 	function calculateDistance(a, b) {
 		return gju.pointDistance({type: 'Point', coordinates: a}, {type: 'Point', coordinates: b})
+	}
+
+	function getSpeedMode(d) {
+		if (d == 0) { return "standing" }
+		else if (d > 0 && d < 5) { return "walking" }
+		else if (d > 5 && d < 20) { return "running" }
+		else if (d > 20) { return "driving" }
+		else return null;
 	}
 
 	//END d3_har
