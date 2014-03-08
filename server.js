@@ -3,7 +3,7 @@ var app = express();
 
 var db = require('pg');
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 3001);
 app.set('views', ('views'));
 app.set('view engine', 'jade');
 app.use(express.favicon());
