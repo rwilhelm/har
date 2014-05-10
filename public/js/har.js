@@ -1,9 +1,8 @@
-'use strict';
+/* jshint strict:true, devel:true, debug:true */
+/* global angular, app */
+'use strict'; // jshint -W097
 
-var API_KEY = 'BC9A493B41014CAABB98F0471D759707'
-
-var map = new L.Map("map", {zoom: 15, minZoom: 10, maxZoom: 18})
-	.addLayer(new L.TileLayer("http://{s}.tile.cloudmade.com/" + API_KEY + "/998/256/{z}/{x}/{y}.png"));
+var map = L.mapbox.map('map', 'rene.i6mdi15p'); // mapbox id [username].[project]
 
 var h, g, f, a; // DEBUG global for debugging
 
